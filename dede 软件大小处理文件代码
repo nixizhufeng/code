@@ -1,0 +1,55 @@
+<?php
+/**
+ * 数据库数据转换处理
+ */
+require_once (dirname(__FILE__) . "/include/common.inc.php");
+/**
+ * 数据转换统一单位
+ *
+ * @param String $id 文档ID
+ * @param String $count 数据库表数据
+ * @author chenjianlong <939238564@qq.com>
+ */
+function softsizet($id,$count){
+    global $dsql;
+    //$count = $dsql->GetOne("SELECT `aid`,`softsize` FROM  `xzzj_addonsoft` WHERE aid=$id");
+    preg_match('/(MB|KB|GB)/', $count['softsize'],$unit);
+    //截取单位
+    preg_match('/([0-9]+(.)?([0-9]+)?)/', $count['softsize'],$value);
+    //截取数值
+    if($unit[0] == 'MB'){//转换为KB单位存储 
+        $size = $value[0] * 1024;
+    }else if($unit[0] == 'KB'){      
+        $size = $value[0];  
+    }else if($unit[0] == 'GB'){      
+        $size = $value[0] * 1024 * 1024;  
+    }else{      
+        $size = 0;  
+    }  
+    $size = $size * 100;  
+    $msql = mysql_query("UPDATE `xzzj_addonsoft` SET `softsizet` = '$size' WHERE `xzzj_addonsoft`.`aid` =$id");  
+    if($msql){echo '写入成功'.'<br />';}else{echo '写入失败'.'<br />';}}
+    /**
+     * 启动单位转换函数
+     *
+     * @author chenjianlong <939238564@qq.com>
+     */
+    function start(){
+        global $dsql;
+        //$count = $dsql->GetOne("SELECT count(*) AS count FROM `xzzj_addonsoft`");$count =  $count['count'];
+        $list = array();
+        $query = $dsql->Execute("","SELECT aid,softsize FROM `xzzj_addonsoft` order by aid");
+        while($info = $dsql->GetArray($query)){
+            $aid = $info['aid'];
+            softsizet($aid, $info);
+        }
+        //for($i=1;$i<=$count;$i++){
+            //$idsql = $dsql->GetOne("SELECT aid FROM `xzzj_addonsoft` WHERE aid='$i' GROUP BY aid ");
+            //if($idsql){
+                //softsizet($idsql['aid']);
+                //echo $idsql['aid'].'<br />';
+            //}
+        //}
+    }
+    start();
+?>
