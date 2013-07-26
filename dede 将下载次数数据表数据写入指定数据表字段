@@ -1,0 +1,32 @@
+<?php
+/**
+ * 数据库数据转换处理
+ */
+require_once (dirname(__FILE__) . "/include/common.inc.php");
+/**
+ * 数据表数据写入字段
+ *
+ * @author chenjianlong <939238564@qq.com>
+ */
+function fodo(){
+    global $dsql;
+    function Downloads($id){
+        global $dsql;
+        $count = $dsql->GetOne("SELECT id,SUM(downloads) AS totals FROM `xzzj_downloads` WHERE id='$id' GROUP BY id ");
+        $sid = $count['id'];$totals = $count['totals'];
+        if(!empty($count)){
+            mysql_query("UPDATE `xzzj_addonsoft` SET `downloads` = '$totals' WHERE `xzzj_addonsoft`.`aid` =$sid");
+        }
+    }
+    $count = $dsql->GetOne("SELECT count(*) AS count FROM `xzzj_downloads`");
+    $count =  $count['count'];
+    for($i=1;$i<=$count;$i++){
+        $idsql = $dsql->GetOne("SELECT id FROM `xzzj_downloads` WHERE id='$i' GROUP BY id ");
+        if($idsql){
+            $id = $idsql['id'];
+            Downloads($id);
+        }
+    }
+}
+fodo();
+?>
